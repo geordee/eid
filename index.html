@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <title>Validate Emirates ID</title>
-  <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mvp.css/1.6.2/mvp.css">
   <style>
     section {
       display: flex;
@@ -20,6 +20,65 @@
       text-align: center;
     }
   </style>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/cleave.js/1.0.2/cleave.min.js"></script>
+  <script type="text/javascript">
+    function validateEID() {
+      var element = document.getElementById("emirates-id");
+      var message = document.getElementById("message");
+      message.className = "";
+
+      // regex for emirates id with birth dates between 1900 and 2099
+      var re = new RegExp(/^784[-]*(19|20)\d{2}[-]*\d{7}[-]*\d$/);
+
+      var eid = element.value;
+      if (!re.test(eid)) {
+        console.log("Emirates ID format is incorrect.");
+
+        // set error message
+        message.classList.add("mark-failure")
+        message.textContent = "Emirates ID format is incorrect.";
+
+        return false;
+      }
+
+      // luhn algorithm for checkdigit
+      var s = 0,
+        x = true;
+      var v = eid.replace(/\D/g, "");
+      var len = v.length;
+      var checkdigit = v.charAt(len - 1);
+
+      for (var n = len - 2; n >= 0; n--) {
+        var c = v.charAt(n),
+          i = parseInt(c, 10);
+
+        if (x && (i *= 2) > 9) i -= 9;
+
+        s += i;
+        x = !x;
+      }
+      var checksum = (s * 9) % 10;
+
+      // validate checkdigit
+      if (checksum != checkdigit) {
+        console.log("Emirates ID check digit is incorrect.");
+
+        // set error message
+        message.classList.add("mark-failure")
+        message.textContent = "Emirates ID check digit is incorrect.";
+
+        return false;
+      }
+
+      console.log("Emirates ID is valid.");
+
+      // set error message
+      message.classList.add("mark-success")
+      message.textContent = "Emirates ID is valid.";
+
+      return true;
+    }
+  </script>
 </head>
 <body>
   <main>
@@ -30,69 +89,23 @@
       </header>
       <form onSubmit="return false;">
         <label for="emirates-id">Emirates ID</label><br />
-        <input id="emirates-id" name="emirates-id" placeholder="784-XXXX-XXXXXXX-X" onChange="validateEID()" />
+        <input id="emirates-id"
+               name="emirates-id"
+               placeholder="784-XXXX-XXXXXXX-X"
+               autocomplete="off"
+               onInput="validateEID()" />
         <button onClick="validateEID()">Check</button>
         <p id="message">&nbsp;</p>
       </form>
     </section>
   </main>
+  <script type="text/javascript">
+  (function () {
+    var cleave = new Cleave("#emirates-id", {
+      delimiter: "-",
+      blocks: [3, 4, 7, 1]
+    });
+  })();
+  </script>
 </body>
-<script type="text/javascript">
-  function validateEID() {
-    var element = document.getElementById("emirates-id");
-    var message = document.getElementById("message");
-    message.className = "";
-
-    // regex for emirates id with birth dates between 1900 and 2099
-    var re = new RegExp(/^784[-]*(19|20)\d{2}[-]*\d{7}[-]*\d$/);
-
-    var eid = element.value;
-    if (!re.test(eid)) {
-      console.log("Emirates ID format is incorrect.");
-
-      // set error message
-      message.classList.add("mark-failure")
-      message.textContent = "Emirates ID format is incorrect.";
-
-      return false;
-    }
-
-    // luhn algorithm for checkdigit
-    var s = 0,
-        x = true;
-    var v = eid.replace(/\D/g, "");
-    var len = v.length;
-    var checkdigit = v.charAt(len-1);
-
-    for (var n = len-2; n >= 0; n--) {
-      var c = v.charAt(n),
-          i = parseInt(c, 10);
-
-      if (x && (i *= 2) > 9) i -= 9;
-
-      s += i;
-      x = !x;
-    }
-    var checksum = (s * 9) % 10;
-
-    // validate checkdigit
-    if (checksum != checkdigit) {
-      console.log("Emirates ID check digit is incorrect.");
-
-      // set error message
-      message.classList.add("mark-failure")
-      message.textContent = "Emirates ID check digit is incorrect.";
-
-      return false;
-    }
-
-    console.log("Emirates ID is valid.");
-
-    // set error message
-    message.classList.add("mark-success")
-    message.textContent = "Emirates ID is valid.";
-
-    return true;
-  }
-</script>
 </html>
