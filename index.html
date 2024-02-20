@@ -22,6 +22,25 @@
   </style>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/cleave.js/1.0.2/cleave.min.js"></script>
   <script type="text/javascript">
+    function computeCheckDigit(a) {
+      // luhn algorithm for checkdigit
+      var s = 0, x = true;
+      var l = a.length;
+
+      for (var n = l - 1; n >= 0; n--) {
+        var c = a.charAt(n),
+          i = parseInt(c, 10);
+
+        if (x && (i *= 2) > 9) i -= 9;
+
+        s += i;
+        x = !x;
+      }
+      var z = (s * 9) % 10;
+
+      return z;
+    }
+
     function validateEID() {
       var element = document.getElementById("emirates-id");
       var message = document.getElementById("message");
@@ -41,31 +60,22 @@
         return false;
       }
 
-      // luhn algorithm for checkdigit
-      var s = 0,
-        x = true;
-      var v = eid.replace(/\D/g, "");
-      var len = v.length;
-      var checkdigit = v.charAt(len - 1);
+      var valid = false;
+      var digits = eid.replace(/\D/g, "");
 
-      for (var n = len - 2; n >= 0; n--) {
-        var c = v.charAt(n),
-          i = parseInt(c, 10);
+      var sequence = digits.substr(0, digits.length - 1);
+      var checkdigit = digits.substr(-1);
+      var checksum = computeCheckDigit(sequence);
 
-        if (x && (i *= 2) > 9) i -= 9;
-
-        s += i;
-        x = !x;
-      }
-      var checksum = (s * 9) % 10;
+      valid = (checksum == checkdigit);
 
       // validate checkdigit
-      if (checksum != checkdigit) {
-        console.log("Emirates ID check digit is incorrect.");
+      if (!valid) {
+        console.log("Check digit is incorrect. Expected " + checksum + ".");
 
         // set error message
         message.classList.add("mark-failure")
-        message.textContent = "Emirates ID check digit is incorrect.";
+        message.textContent = "Check digit is incorrect. Expected " + checksum + ".";
 
         return false;
       }
